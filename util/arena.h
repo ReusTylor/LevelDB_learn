@@ -52,18 +52,18 @@ class Arena {
   std::atomic<size_t> memory_usage_;
 };
 
-inline char* Arena::Allocate(size_t bytes) {
+inline char* Arena::Allocate(size_t bytes) { //最上层接口
   // The semantics of what to return are a bit messy if we allow
   // 0-byte allocations, so we disallow them here (we don't need
   // them for our internal use).
-  assert(bytes > 0);
-  if (bytes <= alloc_bytes_remaining_) {
+  assert(bytes > 0);  //assert在程序中尽量不要使用，
+  if (bytes <= alloc_bytes_remaining_) {  //判断需要的字节数是否<=当前内存剩余的字节数
     char* result = alloc_ptr_;
     alloc_ptr_ += bytes;
     alloc_bytes_remaining_ -= bytes;
     return result;
   }
-  return AllocateFallback(bytes);
+  return AllocateFallback(bytes); //否则的话进入fallback
 }
 
 }  // namespace leveldb

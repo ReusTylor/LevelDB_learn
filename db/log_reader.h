@@ -11,15 +11,18 @@
 #include "leveldb/slice.h"
 #include "leveldb/status.h"
 
+// 主要用于实现LevelDB数据库中的日志读取功能，用于读取和解析数据库日志文件
 namespace leveldb {
 
-class SequentialFile;
+class SequentialFile; // 文件顺序类，表示待读取的日志文件
 
 namespace log {
 
+// 定义了Reader类
 class Reader {
  public:
   // Interface for reporting errors.
+  // reporter内部类用于报告错误
   class Reporter {
    public:
     virtual ~Reporter();
@@ -40,6 +43,7 @@ class Reader {
   //
   // The Reader will start reading at the first record located at physical
   // position >= initial_offset within the file.
+  // 构造函数 file:顺序文件指针
   Reader(SequentialFile* file, Reporter* reporter, bool checksum,
          uint64_t initial_offset);
 
@@ -53,11 +57,13 @@ class Reader {
   // "*scratch" as temporary storage.  The contents filled in *record
   // will only be valid until the next mutating operation on this
   // reader or the next mutation to *scratch.
+  // 用于读取下一个日志记录
   bool ReadRecord(Slice* record, std::string* scratch);
 
   // Returns the physical offset of the last record returned by ReadRecord.
   //
   // Undefined before the first call to ReadRecord.
+  // 返回上次调用ReadRecord时返回的日志记录的物理偏移量
   uint64_t LastRecordOffset();
 
  private:

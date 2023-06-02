@@ -13,13 +13,18 @@
 namespace leveldb {
 namespace log {
 
-Reader::Reporter::~Reporter() = default;
+// 析构函数的默认实现
+Reader::Reporter::~Reporter() = default; 
 
+// 构造函数
+// 对Reader类的成员变量进行初始化，为后续的日志读取作准备。
+// 创建临时存储空间用于读取日志记录的内容
 Reader::Reader(SequentialFile* file, Reporter* reporter, bool checksum,
                uint64_t initial_offset)
     : file_(file),
-      reporter_(reporter),
-      checksum_(checksum),
+      reporter_(reporter), //错误报告器指针赋值给reporter_成员变量
+      checksum_(checksum), // 将传入的布尔值赋值给checksum_成员变量。
+      // new 一个kBlockSize大小的数组， 并将其地址赋值给backing_store_，用作临时存储空间
       backing_store_(new char[kBlockSize]),
       buffer_(),
       eof_(false),
@@ -28,22 +33,32 @@ Reader::Reader(SequentialFile* file, Reporter* reporter, bool checksum,
       initial_offset_(initial_offset),
       resyncing_(initial_offset > 0) {}
 
+// 释放通过new在堆上分配的字符数组，防止内存泄漏
 Reader::~Reader() { delete[] backing_store_; }
 
+// 跳过日志文件中初始偏移量之前的数据块，以定位到第一个可能包含初始记录的数据块
 bool Reader::SkipToInitialBlock() {
+  // 计算初始偏移量在块内的偏移量
   const size_t offset_in_block = initial_offset_ % kBlockSize;
+  // 初始数据块的起始位置
   uint64_t block_start_location = initial_offset_ - offset_in_block;
 
   // Don't search a block if we'd be in the trailer
+  // 因为CRC需要6个字节进行校验
+  // 如果偏移量在块内超过了块大小减去6（留出6个字节的空间用于CRC校验），则将起始位置调整到下一个数据块的开始位置
   if (offset_in_block > kBlockSize - 6) {
     block_start_location += kBlockSize;
   }
 
+  // 将end_of_buffer_offset_设置为初始数据块的起始位置，表示缓冲区的末尾位置。
   end_of_buffer_offset_ = block_start_location;
 
   // Skip to start of first block that can contain the initial record
+  // 如果起始位置大于0,即存在需要跳过的数据块
   if (block_start_location > 0) {
+    // 顺序文件的skip函数将文件指针移动到起始位置
     Status skip_status = file_->Skip(block_start_location);
+    // 如果跳过操作失败，文件读取错误
     if (!skip_status.ok()) {
       ReportDrop(block_start_location, skip_status);
       return false;
