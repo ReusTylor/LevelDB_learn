@@ -8,15 +8,18 @@ namespace leveldb {
 
 static const int kBlockSize = 4096;
 
+// 默认构造函数初始化对象的成员变量
 Arena::Arena()
     : alloc_ptr_(nullptr), alloc_bytes_remaining_(0), memory_usage_(0) {}
 
+// 释放分配的所有内存块
 Arena::~Arena() {
   for (size_t i = 0; i < blocks_.size(); i++) {
     delete[] blocks_[i];
   }
 }
 
+// 请求的字节数大于当前内存的四分之一时，单独分配一个新的内存块，否则在当前内存块中分配
 char* Arena::AllocateFallback(size_t bytes) {
   if (bytes > kBlockSize / 4) { //需要的字节大于当前字节的1/4
     // Object is more than a quarter of our block size.  Allocate it separately
@@ -36,6 +39,7 @@ char* Arena::AllocateFallback(size_t bytes) {
 }
 
 char* Arena::AllocateAligned(size_t bytes) {
+  // 使用较大的值提高对齐效率
   const int align = (sizeof(void*) > 8) ? sizeof(void*) : 8;
   static_assert((align & (align - 1)) == 0,
                 "Pointer size should be a power of 2");
@@ -55,9 +59,12 @@ char* Arena::AllocateAligned(size_t bytes) {
   return result;
 }
 
+// 用于分配新的内存块，并将其添加到内部的块数组中。
 char* Arena::AllocateNewBlock(size_t block_bytes) {
+  //使用new 分配指定大小的内存
   char* result = new char[block_bytes];
   blocks_.push_back(result);
+  // 更新内存使用量的原子计数器
   memory_usage_.fetch_add(block_bytes + sizeof(char*),
                           std::memory_order_relaxed);
   return result;
