@@ -11,6 +11,7 @@
 
 namespace leveldb {
 
+// 从给定的字符指针data中提取长度前缀的切片 slice
 static Slice GetLengthPrefixedSlice(const char* data) {
   uint32_t len;
   const char* p = data;
