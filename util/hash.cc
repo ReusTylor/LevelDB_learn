@@ -19,15 +19,21 @@
 
 namespace leveldb {
 
+// 采取逐个输入数据的方式计算哈希值，
 uint32_t Hash(const char* data, size_t n, uint32_t seed) {
   // Similar to murmur hash
+  // m和r用于计算哈希值
   const uint32_t m = 0xc6a4a793;
   const uint32_t r = 24;
+
+  // 
   const char* limit = data + n;
+  // 根据种子值和数据长度计算初始哈希值 
   uint32_t h = seed ^ (n * m);
 
   // Pick up four bytes at a time
   while (data + 4 <= limit) {
+    // DecodeFixed32 函数将4个字节的数据转换为一个32位整数 w
     uint32_t w = DecodeFixed32(data);
     data += 4;
     h += w;
@@ -36,7 +42,9 @@ uint32_t Hash(const char* data, size_t n, uint32_t seed) {
   }
 
   // Pick up remaining bytes
+  // 处理剩余的字节
   switch (limit - data) {
+    // murmur hash中处理剩余字节的常见方式
     case 3:
       h += static_cast<uint8_t>(data[2]) << 16;
       FALLTHROUGH_INTENDED;
@@ -53,3 +61,6 @@ uint32_t Hash(const char* data, size_t n, uint32_t seed) {
 }
 
 }  // namespace leveldb
+
+// MurmurHash 算法的核心思想是通过对输入数据进行一系列的位操作和混合操作，以产生一个哈希值。
+// 它采用分布均匀的方式将输入数据映射到一个较大的输出空间，通常是一个32位或64位的哈希值。

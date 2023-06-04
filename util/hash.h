@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 
+// 哈希表和布隆过滤器会用到哈希函数
 namespace leveldb {
 
 uint32_t Hash(const char* data, size_t n, uint32_t seed);
