@@ -20,17 +20,21 @@
 
 #include <cstdint>
 
+// 仅依赖slice
 #include "leveldb/export.h"
 #include "leveldb/slice.h"
 
+//LRU淘汰策略
 namespace leveldb {
 
 class LEVELDB_EXPORT Cache;
 
-// Create a new cache with a fixed size capacity.  This implementation
+// Create a new cache with a fixed size capacity.  This implementation  
 // of Cache uses a least-recently-used eviction policy.
+// 默认采用LRU替换策略
 LEVELDB_EXPORT Cache* NewLRUCache(size_t capacity);
 
+//缓存对象的接口
 class LEVELDB_EXPORT Cache {
  public:
   Cache() = default;

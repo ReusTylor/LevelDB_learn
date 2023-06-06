@@ -40,12 +40,23 @@ namespace {
 
 // An entry is a variable length heap-allocated structure.  Entries
 // are kept in a circular doubly linked list ordered by access time.
+
+
+//定义LRUHandle结构体，代表cache中的元素
 struct LRUHandle {
-  void* value;
-  void (*deleter)(const Slice&, void* value);
+  void* value; //存储的cache的数据
+  void (*deleter)(const Slice&, void* value); // 数据从Cache中清除时执行的清理函数
+  // 指向节点在hash table链表中的下一个hash(key)相同的元素，在有碰撞时Leveldb采用的是链表法。
+  // 最后一个节点的next_hash为NULL。
   LRUHandle* next_hash;
+
+  // 节点在双向链表中的前驱和后继节点指针 
+  // 所有的cache数据都是存储在一个双向list中，最前面的是最新加入的，每次新加入的位置都是head->next。
+  // 所以每次剔除的规则就是剔除list tail
   LRUHandle* next;
   LRUHandle* prev;
+
+  
   size_t charge;  // TODO(opt): Only allow uint32_t?
   size_t key_length;
   bool in_cache;     // Whether entry is in the cache.
