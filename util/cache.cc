@@ -159,7 +159,9 @@ class HandleTable {
 };
 
 // A single shard of sharded cache.
+// 类似于分段锁的设计方式
 class LRUCache {
+  // 实现了一个可以指定容量的LRU缓存，当达到容量后，会将旧的数据从缓存移除
  public:
   LRUCache();
   ~LRUCache();
